@@ -162,6 +162,9 @@ def register_management(stores: Stores) -> None:
                 "Akun owner lama tidak lagi memiliki akses owner."
             )
         elif cmd == "settimezone":
+            if not await is_owner(uid, stores):
+                await message.reply_text("⛔ Hanya owner yang dapat mengubah konfigurasi global.")
+                return
             if len(message.command) < 2:
                 await message.reply_text("Format: <code>/settimezone Asia/Jakarta</code>")
                 return
@@ -173,6 +176,9 @@ def register_management(stores: Stores) -> None:
             await stores.settings.update(lambda data: data.update({"timezone": message.command[1]}))
             await message.reply_text("✅ Zona waktu disimpan. Berlaku untuk jadwal baru setelah bot dimulai ulang.")
         elif cmd == "setparsemode":
+            if not await is_owner(uid, stores):
+                await message.reply_text("⛔ Hanya owner yang dapat mengubah konfigurasi global.")
+                return
             if len(message.command) < 2 or message.command[1].lower() not in ("html", "markdown"):
                 await message.reply_text("Pilihan: <code>/setparsemode html</code> atau <code>/setparsemode markdown</code>.")
                 return
