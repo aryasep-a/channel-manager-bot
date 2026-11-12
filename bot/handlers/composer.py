@@ -10,7 +10,7 @@ from pyrogram.types import CallbackQuery, Message
 from bot.client import app
 from bot.config import settings
 from bot.keyboards.menus import (
-    channel_picker, confirm_keyboard, content_options, button_builder, cancel_keyboard,
+    channel_picker, confirm_keyboard, content_options, button_builder, cancel_keyboard, back_menu,
 )
 from bot.services.permissions import role_of
 from bot.services.posting import publish
@@ -199,7 +199,7 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
 
         if action_name == "cancel":
             app.pending.pop(uid, None)
-            await query.message.edit_text("✖️ Proses dibatalkan.")
+            await query.message.edit_text("✖️ Proses dibatalkan.", reply_markup=back_menu())
             await query.answer()
             return
 
@@ -208,7 +208,7 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
                 await query.answer("Kirim konten terlebih dahulu.", show_alert=True)
                 return
             pending["stage"] = "button_label"
-            await query.message.reply_text("Kirim teks label tombol (maksimal 64 karakter).")
+            await query.message.reply_text("Kirim teks label tombol (maksimal 64 karakter).", reply_markup=cancel_keyboard())
             await query.answer()
             return
 
@@ -284,7 +284,7 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
                         f"• <code>{item['channel_id']}</code>: {escape(item.get('error', 'Gagal')[:120])}"
                         for item in failed
                     )
-                await query.message.reply_text(text)
+                await query.message.reply_text(text, reply_markup=back_menu())
             app.pending.pop(uid, None)
             await query.answer()
             return
