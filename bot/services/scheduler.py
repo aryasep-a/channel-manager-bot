@@ -30,7 +30,7 @@ class ScheduleService:
     async def _execute(self,sid:str):
         data=await self.stores.schedules.read(); item=next((x for x in data['schedules'] if x['id']==sid),None)
         if not item or item['status']!='pending': return
-        result=await publish(self.client,self.stores,item['source_chat_id'],item['source_message_id'],item['channel_ids'],item['actor_id'])
+        result=await publish(self.client,self.stores,item['source_chat_id'],item['source_message_id'],item['channel_ids'],item['actor_id'],item.get('buttons'))
         await self._status(sid,'sent' if all(x['ok'] for x in result) else 'partial')
     async def cancel(self,sid:str)->bool:
         data=await self.stores.schedules.read()
