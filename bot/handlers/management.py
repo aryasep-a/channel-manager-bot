@@ -1,4 +1,5 @@
 from datetime import datetime
+from html import escape
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pyrogram import filters
