@@ -97,7 +97,7 @@ def register_channels(stores: Stores) -> None:
         elif action == "refresh":
             rows = (await stores.channels.read())["channels"]
             text = "📢 <b>CHANNELS</b>\n━━━━━━━━━━━━━━━━━━━━\n"
-            text += "\n".join(f"• {item['title']} · <code>{item['chat_id']}</code>" for item in rows) if rows else "Belum ada channel yang terhubung."
+            text += "\n".join(f"• {escape(str(item['title']))} · <code>{item['chat_id']}</code>" for item in rows) if rows else "Belum ada channel yang terhubung."
             await query.message.edit_text(text, reply_markup=channel_menu(rows))
             await query.answer("Diperbarui.")
         elif action == "confirm_remove" and len(parts) == 3 and parts[2].lstrip("-").isdigit():
