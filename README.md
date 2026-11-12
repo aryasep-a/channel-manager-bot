@@ -55,6 +55,8 @@ bash restart
 bash update
 ```
 
+The owner can also run `/update` or `/restart` from Telegram Settings. These controls call only the fixed project scripts, never arbitrary shell commands. Use the bot after starting it with `bash start` so the expected tmux session exists.
+
 The scripts use Python 3.10 in the local `.venv/bin/python` and a tmux session named `channel-manager`. Logs are available through:
 
 ```bash
@@ -93,6 +95,8 @@ Detach without stopping the bot using `Ctrl+B`, then `D`.
 | `/addadmin USER_ID`, `/deladmin USER_ID` | Manage admins (owner only) |
 | `/setowner USER_ID` | Transfer owner (current owner only) |
 | `/settimezone Asia/Jakarta` | Set timezone |
+| `/update` | Pull latest GitHub version, validate and restart (owner only) |
+| `/restart` | Restart bot through tmux (owner only) |
 | `/settings` | Show configuration |
 | `/cancel` | Cancel active composition |
 
