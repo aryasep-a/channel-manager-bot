@@ -26,6 +26,10 @@ def back_menu():
     return InlineKeyboardMarkup([[InlineKeyboardButton("⬅️ Menu utama", callback_data="menu:home")]])
 
 
+def cancel_keyboard():
+    return InlineKeyboardMarkup([[InlineKeyboardButton("✖️ Batalkan", callback_data="flow:cancel")]])
+
+
 def channel_menu(channels: list[dict]):
     rows = [[InlineKeyboardButton("➕ Tambah channel", callback_data="channel:add")]]
     rows.extend(
