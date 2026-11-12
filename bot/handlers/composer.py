@@ -39,7 +39,7 @@ def register_composer(stores:Stores,scheduler:ScheduleService)->None:
             app.pending.pop(uid,None); await message.reply_text("Belum ada channel terdaftar. Tambahkan dulu dengan <code>/addchannel @username</code>."); return
         pending.update({"source_chat_id":message.chat.id,"source_message_id":message.id})
         app.pending[uid]=pending
-        await message.reply_text("📍 <b>PILIH CHANNEL TUJUAN</b>\\nPilih satu atau kirim ke semua channel:",reply_markup=channel_picker(channels["channels"]))
+        await message.reply_text("📍 <b>PILIH CHANNEL TUJUAN</b>\nPilih satu atau kirim ke semua channel:",reply_markup=channel_picker(channels["channels"]))
     @app.on_callback_query(filters.regex(r"^target:"))
     async def target(_,query:CallbackQuery):
         if not await role_of(query.from_user.id,stores):
@@ -51,7 +51,7 @@ def register_composer(stores:Stores,scheduler:ScheduleService)->None:
         if not selected: await query.answer("Channel not found.",show_alert=True); return
         pending["channel_ids"]=[int(x["chat_id"]) for x in selected]; pending["channel_names"]=[x["title"] for x in selected]
         app.pending[query.from_user.id]=pending
-        await query.message.edit_text("Preview destination:\n"+ "\n".join("• "+x["title"] for x in selected),reply_markup=confirm_keyboard(pending["mode"] == "schedule"))
+        await query.message.edit_text(("🗓 <b>KONFIRMASI JADWAL</b>" if pending["mode"] == "schedule" else "📋 <b>KONFIRMASI POSTING</b>")+"\n━━━━━━━━━━━━━━━━━━━━\nTujuan:\n"+ "\n".join("• "+x["title"] for x in selected),reply_markup=confirm_keyboard(pending["mode"] == "schedule"))
         await query.answer()
     @app.on_callback_query(filters.regex(r"^compose:"))
     async def action(_,query:CallbackQuery):
