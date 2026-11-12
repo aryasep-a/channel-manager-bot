@@ -21,6 +21,10 @@ if [[ ! -x .venv/bin/python ]]; then
   echo "ERROR: .venv belum ada. Jalankan bash start terlebih dahulu."
   exit 1
 fi
+.venv/bin/python -c 'import sys; assert sys.version_info[:2] == (3, 10), "Virtualenv wajib memakai Python 3.10"' || {
+  echo "ERROR: .venv harus menggunakan Python 3.10."
+  exit 1
+}
 
 BRANCH="$(git branch --show-current)"
 PREVIOUS="$(git rev-parse HEAD)"
@@ -47,8 +51,7 @@ git fetch origin "$BRANCH"
 git pull --ff-only origin "$BRANCH"
 .venv/bin/python -m pip install -r requirements.txt
 .venv/bin/python -m compileall -q bot main.py
-trap - ERR
-
 echo "Update berhasil: $(git rev-parse --short HEAD)"
 echo "Backup data: $BACKUP_DIR/data-$STAMP.tar.gz"
 if [[ "$RUNNING" -eq 1 ]]; then bash "$ROOT/start"; else echo "Bot sebelumnya berhenti, tidak dijalankan otomatis."; fi
+trap - ERR
