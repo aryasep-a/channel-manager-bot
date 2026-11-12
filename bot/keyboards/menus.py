@@ -41,6 +41,13 @@ def confirm_channel_remove(chat_id: int):
     ])
 
 
+def admins_menu(admins: list[dict]):
+    rows = [[InlineKeyboardButton("➕ Tambah admin", callback_data="settings:add_admin")]]
+    rows.extend([[InlineKeyboardButton(f"🗑 Hapus {item['user_id']}", callback_data=f"settings:remove_admin:{item['user_id']}")] for item in admins])
+    rows.append([InlineKeyboardButton("⬅️ Kembali", callback_data="menu:settings")])
+    return InlineKeyboardMarkup(rows)
+
+
 def settings_menu():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("👥 Kelola admin", callback_data="settings:admins")],
