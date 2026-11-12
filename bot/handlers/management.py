@@ -11,8 +11,11 @@ from bot.client import app
 from bot.config import settings
 from bot.storage.json_store import Stores
 from bot.services.permissions import role_of, is_owner, owner_id, log_activity
-from bot.keyboards.menus import settings_menu, main_menu, channel_menu
+from bot.keyboards.menus import settings_menu, main_menu, channel_menu, admins_menu, back_menu
 from bot import runtime
+
+
+_awaiting_settings: dict[int, str] = {}
 
 
 def _line():
@@ -229,6 +232,50 @@ def register_management(stores: Stores) -> None:
             lines = [f"• <code>{item['id']}</code>" for item in reversed(rows)]
             await message.reply_text("📝 <b>DRAFT</b>\n" + _line() + "\n" + ("\n".join(lines) if lines else "Belum ada draft."))
 
+    @app.on_callback_query(filters.regex(r"^menu:(schedules|stats|drafts|settings)$"))
+    async def dashboard_sections(_, query: CallbackQuery):
+        if not await role_of(query.from_user.id, stores):
+            await query.answer("Akses ditolak.", show_alert=True)
+            return
+        section = query.data.split(":", 1)[1]
+        if section == "settings":
+            text = await _settings_text(stores)
+            markup = settings_menu()
+        elif section == "stats":
+            history = await stores.history.read()
+            channels = await stores.channels.read()
+            today = datetime.now().astimezone().date().isoformat()
+            today_count = sum(item["sent_at"].startswith(today) for item in history["posts"])
+            text = (
+                "📊 <b>STATISTIK</b>\\n" + _line()
+                + f"\\n📝 Total posting: <b>{len(history['posts'])}</b>"
+                + f"\\n📅 Hari ini: <b>{today_count}</b>"
+                + f"\\n📢 Channel terhubung: <b>{len(channels['channels'])}</b>"
+            )
+            markup = back_menu()
+        elif section == "drafts":
+            rows = (await stores.drafts.read())["drafts"][-15:]
+            listing = "\\n".join(
+                f"• <code>{item['id']}</code> · {escape(str(item.get('created_at', '-')))}"
+                for item in reversed(rows)
+            )
+            text = "📝 <b>DRAFT TERSIMPAN</b>\\n" + _line() + "\\n" + (listing or "Belum ada draft.")
+            markup = back_menu()
+        else:
+            rows = (await stores.schedules.read())["schedules"][-20:]
+            listing = "\\n".join(
+                f"• <code>{item['id']}</code> · {escape(str(item['run_at']))} · <b>{escape(str(item['status']))}</b>"
+                for item in reversed(rows)
+            )
+            text = "🗓 <b>JADWAL POSTING</b>\\n" + _line() + "\\n" + (listing or "Belum ada jadwal.")
+            from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+            markup = InlineKeyboardMarkup([
+                [InlineKeyboardButton("➕ Buat jadwal", callback_data="menu:schedule")],
+                [InlineKeyboardButton("⬅️ Menu utama", callback_data="menu:home")],
+            ])
+        await query.message.edit_text(text, reply_markup=markup)
+        await query.answer()
+
     @app.on_callback_query(filters.regex(r"^settings:"))
     async def settings_actions(_, query: CallbackQuery):
         if not await role_of(query.from_user.id, stores):
@@ -237,43 +284,104 @@ def register_management(stores: Stores) -> None:
         action = query.data.split(":", 1)[1]
         if action == "admins":
             admins = (await stores.admins.read())["admins"]
-            lines = [f"• <code>{item['user_id']}</code>" for item in admins]
-            text = "👥 <b>ADMIN</b>\n" + _line() + "\n" + ("\n".join(lines) if lines else "Belum ada admin tambahan.")
-            text += "\n\nTambah: <code>/addadmin USER_ID</code>\nHapus: <code>/deladmin USER_ID</code>"
+            await query.message.edit_text(
+                "👥 <b>KELOLA ADMIN</b>\\n" + _line() + "\\nPilih tindakan:",
+                reply_markup=admins_menu(admins),
+            )
+            await query.answer()
+            return
+        if action == "add_admin":
+            if not await is_owner(query.from_user.id, stores):
+                await query.answer("Khusus owner.", show_alert=True)
+                return
+            _awaiting_settings[query.from_user.id] = "add_admin"
+            text = "Kirim Telegram user ID yang ingin dijadikan admin."
+        elif action.startswith("remove_admin:"):
+            if not await is_owner(query.from_user.id, stores):
+                await query.answer("Khusus owner.", show_alert=True)
+                return
+            target = action.split(":", 1)[1]
+            if not target.isdigit():
+                await query.answer("ID tidak valid.", show_alert=True)
+                return
+            data = await stores.admins.read()
+            data["admins"] = [item for item in data["admins"] if int(item["user_id"]) != int(target)]
+            await stores.admins.write(data)
+            await query.message.edit_text("🗑 Admin dihapus.", reply_markup=admins_menu(data["admins"]))
+            await query.answer()
+            return
         elif action == "timezone_help":
-            text = "🕒 Zona waktu\nGunakan <code>/settimezone Asia/Jakarta</code>.\nContoh lain: Asia/Singapore, UTC."
+            if not await is_owner(query.from_user.id, stores):
+                await query.answer("Khusus owner.", show_alert=True)
+                return
+            _awaiting_settings[query.from_user.id] = "timezone"
+            text = "🕒 Kirim zona waktu, contoh <code>Asia/Jakarta</code> atau <code>UTC</code>."
         elif action == "owner_help":
-            text = "👑 Ganti owner\nGunakan <code>/setowner USER_ID</code>.\nHanya owner saat ini yang dapat menjalankannya. Perubahan langsung berlaku."
+            if not await is_owner(query.from_user.id, stores):
+                await query.answer("Khusus owner.", show_alert=True)
+                return
+            _awaiting_settings[query.from_user.id] = "owner"
+            text = "👑 Kirim Telegram user ID owner baru. Perubahan langsung berlaku."
         elif action in ("update", "restart"):
             if not await is_owner(query.from_user.id, stores):
                 await query.answer("Khusus owner.", show_alert=True)
                 return
-            script = "update" if action == "update" else "restart"
             text = (
                 "🔄 Update GitHub dimulai. Bot akan restart setelah proses selesai."
-                if script == "update"
-                else "♻️ Restart bot dimulai."
+                if action == "update" else "♻️ Restart bot dimulai."
             )
         else:
-            text = "📚 <b>PERINTAH</b>\n" + _line() + (
-                "\n/channels · /addchannel @username"
-                "\n/delchannel CHANNEL_ID · /setdefault CHANNEL_ID"
-                "\n/post · /schedule YYYY-MM-DD HH:MM"
-                "\n/schedules · /cancel_schedule ID"
-                "\n/drafts · /history · /stats"
-                "\n/addadmin USER_ID · /deladmin USER_ID"
-                "\n/setowner USER_ID · /settimezone ZONE"
-                "\n/settings · /cancel"
-            )
-        await query.message.reply_text(text)
+            text = "Pengaturan tidak dikenal."
+        await query.message.reply_text(text, reply_markup=back_menu())
         await query.answer()
         if action in ("update", "restart"):
             try:
                 _launch_operation(action)
             except Exception as exc:
-                await query.message.reply_text(
-                    f"❌ Operasi gagal: <code>{escape(str(exc))}</code>"
-                )
+                await query.message.reply_text(f"❌ Operasi gagal: <code>{escape(str(exc))}</code>")
+
+    @app.on_message(filters.private & filters.text & ~filters.command())
+    async def receive_settings_input(_, message: Message):
+        uid = message.from_user.id
+        action = _awaiting_settings.pop(uid, None)
+        if not action:
+            return
+        value = (message.text or "").strip()
+        if not await is_owner(uid, stores):
+            await message.reply_text("⛔ Hanya owner yang dapat mengubah pengaturan.")
+            return
+        if action == "timezone":
+            try:
+                ZoneInfo(value)
+            except ZoneInfoNotFoundError:
+                _awaiting_settings[uid] = action
+                await message.reply_text("Zona waktu tidak dikenal. Coba lagi, contoh Asia/Jakarta.")
+                return
+            await stores.settings.update(lambda data: data.update({"timezone": value}))
+            await message.reply_text(f"✅ Zona waktu diperbarui: <code>{escape(value)}</code>", reply_markup=settings_menu())
+        elif action == "owner":
+            if not value.isdigit() or int(value) <= 0:
+                _awaiting_settings[uid] = action
+                await message.reply_text("Kirim user ID numerik yang valid.")
+                return
+            await stores.settings.update(lambda data: data.update({"owner_id": int(value)}))
+            await log_activity(stores, uid, "set_owner", value)
+            await message.reply_text(
+                f"👑 Owner baru: <code>{value}</code>. Akun ini tidak lagi menjadi owner.",
+                reply_markup=main_menu(),
+            )
+        elif action == "add_admin":
+            if not value.isdigit() or int(value) <= 0:
+                _awaiting_settings[uid] = action
+                await message.reply_text("Kirim user ID numerik yang valid.")
+                return
+            data = await stores.admins.read()
+            if any(int(item["user_id"]) == int(value) for item in data["admins"]):
+                await message.reply_text("User tersebut sudah menjadi admin.", reply_markup=admins_menu(data["admins"]))
+                return
+            data["admins"].append({"user_id": int(value), "active": True})
+            await stores.admins.write(data)
+            await message.reply_text("✅ Admin ditambahkan.", reply_markup=admins_menu(data["admins"]))
 
 
 def _launch_operation(script_name: str) -> None:
