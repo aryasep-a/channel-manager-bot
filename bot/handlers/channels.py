@@ -17,7 +17,7 @@ def register_channels(stores:Stores)->None:
         value=message.command[1]
         if cmd=="addchannel":
             try:
-                chat=await app.get_chat(value); member=await app.get_chat_member(chat.id,"me")
+                chat=await app.get_chat(value); me=await app.get_me(); member=await app.get_chat_member(chat.id,me.id)
                 status=str(member.status).lower()
                 if "administrator" not in status and "owner" not in status and "creator" not in status:
                     await message.reply_text("Bot must be an administrator in that channel."); return
