@@ -49,7 +49,7 @@ def register_channels(stores: Stores) -> None:
                 await message.reply_text(
                     "✅ <b>CHANNEL BERHASIL DITAMBAHKAN</b>\n"
                     f"━━━━━━━━━━━━━━━━━━━━\n"
-                    f"Nama: <b>{chat.title}</b>\n"
+                    f"Nama: <b>{escape(str(chat.title))}</b>\n"
                     f"ID: <code>{chat.id}</code>",
                 )
             except Exception as exc:
@@ -123,6 +123,6 @@ def register_channels(stores: Stores) -> None:
             await stores.channels.write(data)
             await log_activity(stores, query.from_user.id, "delete_channel", str(target))
             text = "📢 <b>CHANNELS</b>\n━━━━━━━━━━━━━━━━━━━━\n"
-            text += "\n".join(f"• {item['title']} · <code>{item['chat_id']}</code>" for item in data["channels"]) if data["channels"] else "Belum ada channel yang terhubung."
+            text += "\n".join(f"• {escape(str(item['title']))} · <code>{item['chat_id']}</code>" for item in data["channels"]) if data["channels"] else "Belum ada channel yang terhubung."
             await query.message.edit_text(text, reply_markup=channel_menu(data["channels"]))
             await query.answer("Channel dihapus.")
