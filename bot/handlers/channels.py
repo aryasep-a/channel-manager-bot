@@ -6,7 +6,7 @@ from pyrogram.types import Message, CallbackQuery
 from bot.client import app
 from bot.storage.json_store import Stores
 from bot.services.permissions import role_of, log_activity
-from bot.keyboards.menus import channel_menu, confirm_channel_remove, main_menu
+from bot.keyboards.menus import channel_menu, confirm_channel_remove, cancel_keyboard
 
 
 _waiting_add: set[int] = set()
