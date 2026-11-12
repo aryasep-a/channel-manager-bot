@@ -29,7 +29,7 @@ def register_composer(stores:Stores,scheduler:ScheduleService)->None:
             except ValueError:
                 await message.reply_text("Invalid or past date. Example: /schedule 2026-12-31 19:30"); return
         app.pending[uid]={"mode":mode,"run_at":run_at}
-        await message.reply_text("✍️ <b>POSTING BARU</b>\\n━━━━━━━━━━━━━━━━━━━━\\nKirim atau teruskan satu pesan yang ingin dipublikasikan.\\nKetik /cancel untuk membatalkan.")
+        await message.reply_text("✍️ <b>POSTING BARU</b>\n━━━━━━━━━━━━━━━━━━━━\nKirim atau teruskan satu pesan yang ingin dipublikasikan.\nKetik /cancel untuk membatalkan.")
     @app.on_message(filters.private & ~filters.command(["start","help","cancel","post","schedule","channels","addchannel","delchannel","setdefault","addadmin","deladmin","admins","stats","history","schedules","cancel_schedule","drafts","settings","setowner","settimezone","setparsemode","templates","template_save"]) & ~filters.regex(r"^(📢 Channels|✍️ Quick Post|🗓 Schedules|📊 Statistics|📝 Drafts|⚙️ Settings)$"))
     async def capture(_,message:Message):
         uid=message.from_user.id; pending=app.pending.get(uid)
@@ -39,7 +39,7 @@ def register_composer(stores:Stores,scheduler:ScheduleService)->None:
             app.pending.pop(uid,None); await message.reply_text("Belum ada channel terdaftar. Tambahkan dulu dengan <code>/addchannel @username</code>."); return
         pending.update({"source_chat_id":message.chat.id,"source_message_id":message.id})
         app.pending[uid]=pending
-        await message.reply_text("Choose destination:",reply_markup=channel_picker(channels["channels"]))
+        await message.reply_text("📍 <b>PILIH CHANNEL TUJUAN</b>\\nPilih satu atau kirim ke semua channel:",reply_markup=channel_picker(channels["channels"]))
     @app.on_callback_query(filters.regex(r"^target:"))
     async def target(_,query:CallbackQuery):
         if not await role_of(query.from_user.id,stores):
@@ -51,7 +51,7 @@ def register_composer(stores:Stores,scheduler:ScheduleService)->None:
         if not selected: await query.answer("Channel not found.",show_alert=True); return
         pending["channel_ids"]=[int(x["chat_id"]) for x in selected]; pending["channel_names"]=[x["title"] for x in selected]
         app.pending[query.from_user.id]=pending
-        await query.message.edit_text("Preview destination:\n"+ "\n".join("• "+x["title"] for x in selected),reply_markup=confirm_keyboard())
+        await query.message.edit_text("Preview destination:\n"+ "\n".join("• "+x["title"] for x in selected),reply_markup=confirm_keyboard(pending["mode"] == "schedule"))
         await query.answer()
     @app.on_callback_query(filters.regex(r"^compose:"))
     async def action(_,query:CallbackQuery):
@@ -66,7 +66,7 @@ def register_composer(stores:Stores,scheduler:ScheduleService)->None:
         if action=="draft":
             item={"id":uuid.uuid4().hex[:10],"actor_id":uid,**pending,"created_at":datetime.now().astimezone().isoformat()}
             await stores.drafts.update(lambda d:d["drafts"].append(item))
-            await query.message.edit_text("💾 <b>DRAFT TERSIMPAN</b>\\nID: <code>"+item["id"]+"</code>")
+            await query.message.edit_text("💾 <b>DRAFT TERSIMPAN</b>\nID: <code>"+item["id"]+"</code>")
         elif pending["mode"]=="schedule":
             item={"id":uuid.uuid4().hex[:10],"actor_id":uid,"source_chat_id":pending["source_chat_id"],"source_message_id":pending["source_message_id"],"channel_ids":pending["channel_ids"],"run_at":pending["run_at"],"status":"pending"}
             try:
@@ -76,9 +76,9 @@ def register_composer(stores:Stores,scheduler:ScheduleService)->None:
             result=await publish(app,stores,pending["source_chat_id"],pending["source_message_id"],pending["channel_ids"],uid)
             ok=sum(1 for x in result if x["ok"])
             failed=[x for x in result if not x["ok"]]
-            summary=f"🚀 <b>POSTING SELESAI</b>\\nBerhasil: <b>{ok}/{len(result)}</b> channel."
+            summary=f"🚀 <b>POSTING SELESAI</b>\nBerhasil: <b>{ok}/{len(result)}</b> channel."
             if failed:
-                details="\\n".join(f"• <code>{x['channel_id']}</code>: {x.get('error','gagal')[:120]}" for x in failed)
-                summary += "\\n\\n<b>Gagal:</b>\\n"+details
+                details="\n".join(f"• <code>{x['channel_id']}</code>: {x.get('error','gagal')[:120]}" for x in failed)
+                summary += "\n\n<b>Gagal:</b>\n"+details
             await query.message.edit_text(summary)
         app.pending.pop(uid,None); await query.answer()
