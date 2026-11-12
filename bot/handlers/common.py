@@ -42,7 +42,7 @@ def register_common(stores: Stores) -> None:
             "• Tombol posting: label tombol lalu URL tujuan. Opsional.\n"
             "• /start membuka dashboard.\n"
             "• /help menampilkan panduan.\n"
-            "• /cancel membatalkan proses yang sedang berjalan."
+            "• Gunakan tombol Batalkan jika ingin menghentikan proses."
         )
 
     @app.on_message(filters.private & filters.command("cancel"))
