@@ -42,6 +42,8 @@ def settings_menu():
         [InlineKeyboardButton("🕒 Zona waktu", callback_data="settings:timezone_help")],
         [InlineKeyboardButton("🔐 Ganti owner", callback_data="settings:owner_help")],
         [InlineKeyboardButton("📋 Semua perintah", callback_data="settings:commands")],
+        [InlineKeyboardButton("🔄 Update dari GitHub", callback_data="settings:update")],
+        [InlineKeyboardButton("♻️ Restart bot", callback_data="settings:restart")],
     ])
 
 
