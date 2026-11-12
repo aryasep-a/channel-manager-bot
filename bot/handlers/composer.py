@@ -10,7 +10,7 @@ from pyrogram.types import CallbackQuery, Message
 from bot.client import app
 from bot.config import settings
 from bot.keyboards.menus import (
-    channel_picker, confirm_keyboard, content_options, button_builder,
+    channel_picker, confirm_keyboard, content_options, button_builder, cancel_keyboard,
 )
 from bot.services.permissions import role_of
 from bot.services.posting import publish
@@ -58,6 +58,7 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
             "✍️ <b>POSTING BARU</b>\n━━━━━━━━━━━━━━━━━━━━\n"
             "Kirim teks, foto, video, GIF, atau dokumen yang ingin diposting.\n"
             "Setelah itu lu bisa menambahkan tombol URL atau langsung lanjut tanpa tombol.",
+            reply_markup=cancel_keyboard(),
         )
         await query.answer()
 
@@ -70,7 +71,8 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
         await query.message.reply_text(
             "🗓 <b>JADWALKAN POSTING</b>\n━━━━━━━━━━━━━━━━━━━━\n"
             "Kirim tanggal dan waktu dengan format <code>YYYY-MM-DD HH:MM</code>.\n"
-            "Zona waktu mengikuti Settings."
+            "Zona waktu mengikuti Settings.",
+            reply_markup=cancel_keyboard(),
         )
         await query.answer()
 
@@ -98,7 +100,8 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
         app.pending[user_id] = {"mode": mode, "run_at": run_at, "buttons": [], "stage": "content"}
         await message.reply_text(
             "✍️ <b>KIRIM KONTEN</b>\n━━━━━━━━━━━━━━━━━━━━\n"
-            "Kirim teks, foto, video, GIF, atau dokumen yang ingin dipublikasikan."
+            "Kirim teks, foto, video, GIF, atau dokumen yang ingin dipublikasikan.",
+            reply_markup=cancel_keyboard(),
         )
 
     composer_input_filter = filters.create(
@@ -123,7 +126,7 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
                     raise ValueError
                 pending["run_at"] = when.isoformat()
                 pending["stage"] = "content"
-                await message.reply_text("✅ Waktu tersimpan. Sekarang kirim teks, foto, video, GIF, atau dokumen yang akan dijadwalkan.")
+                await message.reply_text("✅ Waktu tersimpan. Sekarang kirim teks, foto, video, GIF, atau dokumen yang akan dijadwalkan.", reply_markup=cancel_keyboard())
             except (ValueError, KeyError):
                 await message.reply_text("Format salah atau waktu sudah lewat. Contoh: <code>2026-12-31 19:30</code>")
             return
@@ -135,7 +138,7 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
                 return
             pending["button_label"] = label
             pending["stage"] = "button_url"
-            await message.reply_text("Sekarang kirim URL tujuan, harus diawali http:// atau https://.")
+            await message.reply_text("Sekarang kirim URL tujuan, harus diawali http:// atau https://.", reply_markup=cancel_keyboard())
             return
 
         if stage == "button_url":
