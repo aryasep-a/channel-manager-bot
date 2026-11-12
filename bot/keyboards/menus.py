@@ -51,7 +51,6 @@ def channel_picker(channels: list[dict]):
 def confirm_keyboard():
     return InlineKeyboardMarkup([
         [InlineKeyboardButton("🚀 Terbitkan sekarang", callback_data="compose:publish")],
-        [InlineKeyboardButton("🗓 Simpan sebagai jadwal", callback_data="compose:schedule")],
         [InlineKeyboardButton("💾 Simpan draft", callback_data="compose:draft")],
         [InlineKeyboardButton("✖️ Batalkan", callback_data="compose:cancel")],
     ])
