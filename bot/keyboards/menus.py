@@ -23,10 +23,17 @@ def channel_menu(channels: list[dict]):
         rows.append([
             InlineKeyboardButton(
                 f"🗑 {item['title'][:24]}",
-                callback_data=f"channel:remove:{item['chat_id']}",
+                callback_data=f"channel:confirm_remove:{item['chat_id']}",
             )
         ])
     return InlineKeyboardMarkup(rows)
+
+
+def confirm_channel_remove(chat_id: int):
+    return InlineKeyboardMarkup([
+        [InlineKeyboardButton("🗑 Ya, hapus channel", callback_data=f"channel:remove:{chat_id}")],
+        [InlineKeyboardButton("Batal", callback_data="channel:refresh")],
+    ])
 
 
 def settings_menu():
