@@ -57,7 +57,6 @@ async def _settings_text(stores: Stores) -> str:
         f"👥 Admin tambahan: <b>{admins}</b>\n"
         f"📢 Channel terhubung: <b>{channels}</b>\n"
         f"🕒 Zona waktu: <code>{cfg.get('timezone', settings.timezone)}</code>\n"
-        f"📝 Parse mode: <code>{cfg.get('parse_mode', 'html')}</code>\n"
         f"🖥 Runtime: <code>Python 3.10+</code>\n\n"
         "<b>Perintah konfigurasi</b>\n"
         "<code>/setowner USER_ID</code> · pindah owner\n"
