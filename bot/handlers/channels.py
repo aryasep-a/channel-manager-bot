@@ -53,7 +53,7 @@ def register_channels(stores: Stores) -> None:
                     f"ID: <code>{chat.id}</code>",
                 )
             except Exception as exc:
-                await message.reply_text(f"❌ Gagal menambahkan channel.\n<code>{str(exc)[:250]}</code>")
+                await message.reply_text(f"❌ Gagal menambahkan channel.\n<code>{escape(str(exc)[:250])}</code>")
         elif not value.lstrip("-").isdigit():
             await message.reply_text("Gunakan ID channel numerik.")
             return
