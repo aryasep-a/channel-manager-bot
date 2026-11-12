@@ -75,32 +75,16 @@ Detach without stopping the bot using `Ctrl+B`, then `D`.
 
 1. Open the bot using the Telegram account whose ID is configured as `OWNER_ID`.
 2. Add the bot to your channel as administrator and enable **Post Messages**.
-3. Send `/addchannel @channelusername` to the bot.
-4. Open **Channels** and verify the channel is listed.
+3. Open the bot and press **Channel → Tambah channel**.
+4. Send the channel's @username or numeric ID when prompted.
 5. Open **Buat posting**, send text/photo/video/GIF/document, optionally build URL buttons, select destinations and publish.
 
-## Commands
+## Telegram interaction
 
-| Command | Description |
-|---|---|
-| `/start`, `/help` | Dashboard and help |
-| `/channels` | List channels |
-| `/addchannel @username` | Add channel |
-| `/delchannel CHANNEL_ID` | Remove channel |
-| `/setdefault CHANNEL_ID` | Set default channel |
-| `/post` | Quick publish |
-| `/schedule YYYY-MM-DD HH:MM` | Schedule a post |
-| `/schedules` | List schedules |
-| `/cancel_schedule ID` | Cancel a pending schedule |
-| `/drafts`, `/templates` | List saved references |
-| `/history`, `/stats` | History and statistics |
-| `/addadmin USER_ID`, `/deladmin USER_ID` | Manage admins (owner only) |
-| `/setowner USER_ID` | Transfer owner (current owner only) |
-| `/settimezone Asia/Jakarta` | Set timezone |
-| `/update` | Pull latest GitHub version, validate and restart (owner only) |
-| `/restart` | Restart bot through tmux (owner only) |
-| `/settings` | Show configuration |
-| `/cancel` | Cancel active composition |
+- `/start`: open the inline-button dashboard.
+- `/help`: show the short guide.
+
+All navigation and management actions are available through inline buttons. The bot asks for text input only when it needs actual content, a channel username/ID, a button label/URL, a timezone, an owner/admin ID, or a schedule date/time. Older slash-command aliases remain available for compatibility.
 
 ## Data
 
