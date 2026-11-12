@@ -340,7 +340,11 @@ def register_management(stores: Stores) -> None:
             except Exception as exc:
                 await query.message.reply_text(f"❌ Operasi gagal: <code>{escape(str(exc))}</code>")
 
-    @app.on_message(filters.private & filters.text & ~filters.command())
+    settings_input_filter = filters.create(
+        lambda _, __, message: bool(message.from_user and message.from_user.id in _awaiting_settings)
+    )
+
+    @app.on_message(filters.private & filters.text & settings_input_filter)
     async def receive_settings_input(_, message: Message):
         uid = message.from_user.id
         action = _awaiting_settings.pop(uid, None)
