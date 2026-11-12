@@ -55,9 +55,10 @@ def channel_picker(channels: list[dict]):
     return InlineKeyboardMarkup(rows)
 
 
-def confirm_keyboard():
+def confirm_keyboard(is_schedule: bool = False):
+    publish_label = "🗓 Konfirmasi jadwal" if is_schedule else "🚀 Terbitkan sekarang"
     return InlineKeyboardMarkup([
-        [InlineKeyboardButton("🚀 Terbitkan sekarang", callback_data="compose:publish")],
+        [InlineKeyboardButton(publish_label, callback_data="compose:publish")],
         [InlineKeyboardButton("💾 Simpan draft", callback_data="compose:draft")],
         [InlineKeyboardButton("✖️ Batalkan", callback_data="compose:cancel")],
     ])
