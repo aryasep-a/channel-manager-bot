@@ -11,7 +11,7 @@ from bot.client import app
 from bot.config import settings
 from bot.storage.json_store import Stores
 from bot.services.permissions import role_of, is_owner, owner_id, log_activity
-from bot.keyboards.menus import settings_menu, main_menu, channel_menu, admins_menu, back_menu
+from bot.keyboards.menus import settings_menu, main_menu, channel_menu, admins_menu, back_menu, cancel_keyboard
 from bot import runtime
 
 
@@ -368,7 +368,7 @@ def register_management(stores: Stores) -> None:
             )
         else:
             text = "Pengaturan tidak dikenal."
-        await query.message.reply_text(text, reply_markup=back_menu())
+        await query.message.reply_text(text, reply_markup=cancel_keyboard())
         await query.answer()
         if action in ("update", "restart"):
             try:
