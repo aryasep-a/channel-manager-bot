@@ -255,11 +255,11 @@ def register_management(stores: Stores) -> None:
             markup = back_menu()
         elif section == "history":
             rows = (await stores.history.read())["posts"][-20:]
-            listing = "\\n".join(
+            listing = "\n".join(
                 f"• <code>{item['channel_id']}</code> · pesan <code>{item['message_id']}</code> · {escape(str(item.get('sent_at', '-'))[:16])}"
                 for item in reversed(rows)
             )
-            text = "🧾 <b>RIWAYAT POSTING</b>\\n" + _line() + "\\n" + (listing or "Belum ada posting berhasil.")
+            text = "🧾 <b>RIWAYAT POSTING</b>\n" + _line() + "\n" + (listing or "Belum ada posting berhasil.")
             markup = back_menu()
         elif section == "drafts":
             rows = (await stores.drafts.read())["drafts"][-15:]
@@ -296,7 +296,7 @@ def register_management(stores: Stores) -> None:
         ok = await runtime.schedule_service.cancel(schedule_id)
         await query.answer("Jadwal dibatalkan." if ok else "Jadwal pending tidak ditemukan.", show_alert=True)
         rows = (await stores.schedules.read())["schedules"][-20:]
-        listing = "\\n".join(
+        listing = "\n".join(
             f"• <code>{item['id']}</code> · {escape(str(item['run_at']))} · <b>{escape(str(item['status']))}</b>"
             for item in reversed(rows)
         )
@@ -308,7 +308,7 @@ def register_management(stores: Stores) -> None:
         )
         buttons.append([InlineKeyboardButton("⬅️ Menu utama", callback_data="menu:home")])
         await query.message.edit_text(
-            "🗓 <b>JADWAL POSTING</b>\\n" + _line() + "\\n" + (listing or "Belum ada jadwal."),
+            "🗓 <b>JADWAL POSTING</b>\n" + _line() + "\n" + (listing or "Belum ada jadwal."),
             reply_markup=InlineKeyboardMarkup(buttons),
         )
 
