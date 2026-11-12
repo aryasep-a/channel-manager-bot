@@ -65,7 +65,11 @@ def register_channels(stores: Stores) -> None:
         )
         await query.answer()
 
-    @app.on_message(filters.private & filters.text & ~filters.command())
+    channel_input_filter = filters.create(
+        lambda _, __, message: bool(message.from_user and message.from_user.id in _waiting_add)
+    )
+
+    @app.on_message(filters.private & filters.text & channel_input_filter)
     async def receive_channel(_, message: Message):
         uid = message.from_user.id
         if uid not in _waiting_add:
