@@ -31,12 +31,12 @@ async def _add_channel_from_input(message: Message, stores: Stores) -> None:
         await stores.channels.write(data)
         await log_activity(stores, uid, "add_channel", str(chat.id))
         await message.reply_text(
-            "✅ <b>CHANNEL DITAMBAHKAN</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
-            f"Nama: <b>{escape(str(chat.title or chat.id))}</b>\\nID: <code>{chat.id}</code>",
+            "✅ <b>CHANNEL DITAMBAHKAN</b>\n━━━━━━━━━━━━━━━━━━━━\n"
+            f"Nama: <b>{escape(str(chat.title or chat.id))}</b>\nID: <code>{chat.id}</code>",
             reply_markup=channel_menu(data["channels"]),
         )
     except Exception as exc:
-        await message.reply_text(f"❌ Gagal menambahkan channel.\\n<code>{escape(str(exc)[:250])}</code>")
+        await message.reply_text(f"❌ Gagal menambahkan channel.\n<code>{escape(str(exc)[:250])}</code>")
 
 
 def register_channels(stores: Stores) -> None:
@@ -46,8 +46,8 @@ def register_channels(stores: Stores) -> None:
             await query.answer("Akses ditolak.", show_alert=True)
             return
         rows = (await stores.channels.read())["channels"]
-        text = "📢 <b>CHANNELS</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
-        text += "\\n".join(f"• {escape(str(item['title']))} · <code>{item['chat_id']}</code>" for item in rows) if rows else "Belum ada channel yang terhubung."
+        text = "📢 <b>CHANNELS</b>\n━━━━━━━━━━━━━━━━━━━━\n"
+        text += "\n".join(f"• {escape(str(item['title']))} · <code>{item['chat_id']}</code>" for item in rows) if rows else "Belum ada channel yang terhubung."
         await query.message.edit_text(text, reply_markup=channel_menu(rows))
         await query.answer()
 
@@ -58,9 +58,9 @@ def register_channels(stores: Stores) -> None:
             return
         _waiting_add.add(query.from_user.id)
         await query.message.reply_text(
-            "➕ <b>TAMBAH CHANNEL</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
-            "Kirim @username channel atau ID channel privat.\\n"
-            "Pastikan bot sudah menjadi admin dengan izin Post Messages.\\n\n"
+            "➕ <b>TAMBAH CHANNEL</b>\n━━━━━━━━━━━━━━━━━━━━\n"
+            "Kirim @username channel atau ID channel privat.\n"
+            "Pastikan bot sudah menjadi admin dengan izin Post Messages.\n\n"
             "Ketik /cancel untuk membatalkan."
         )
         await query.answer()
