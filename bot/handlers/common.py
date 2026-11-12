@@ -61,6 +61,23 @@ def register_common(stores: Stores) -> None:
             pass
         await message.reply_text("✖️ Proses dibatalkan.", reply_markup=main_menu())
 
+    @app.on_callback_query(filters.regex(r"^flow:cancel$"))
+    async def cancel_flow(_, query: CallbackQuery):
+        uid = query.from_user.id
+        app.pending.pop(uid, None)
+        try:
+            from bot.handlers.channels import _waiting_add
+            _waiting_add.discard(uid)
+        except ImportError:
+            pass
+        try:
+            from bot.handlers.management import _awaiting_settings
+            _awaiting_settings.pop(uid, None)
+        except ImportError:
+            pass
+        await query.message.edit_text("✖️ Proses dibatalkan.", reply_markup=main_menu())
+        await query.answer("Dibatalkan.")
+
     @app.on_callback_query(filters.regex(r"^menu:(home|start|help)$"))
     async def dashboard(_, query: CallbackQuery):
         if not await role_of(query.from_user.id, stores):
