@@ -12,7 +12,9 @@ Telegram Channel Manager built for **Python 3.10**, Kurigram, APScheduler 3.x an
 - Draft and template references
 - Posting history and basic statistics
 - JSON storage with atomic writes
-- Telegram menu interface
+- Inline-button dashboard and navigation
+- Optional URL buttons attached to text, photo, video, GIF and document posts
+- Multi-button builder before publishing, with an option to publish without buttons
 - Bash operations for tmux: start, stop, restart, status and safe update
 
 ## Requirements
@@ -75,7 +77,7 @@ Detach without stopping the bot using `Ctrl+B`, then `D`.
 2. Add the bot to your channel as administrator and enable **Post Messages**.
 3. Send `/addchannel @channelusername` to the bot.
 4. Open **Channels** and verify the channel is listed.
-5. Choose **Quick Post**, send one message, select destinations and publish.
+5. Open **Buat posting**, send text/photo/video/GIF/document, optionally build URL buttons, select destinations and publish.
 
 ## Commands
 
@@ -106,4 +108,4 @@ Persistent JSON files are stored in `data/`. Back up this directory regularly. R
 
 ## Current limitations
 
-This release supports single-message publishing. Album composition, recurring schedules, auto-delete, a visual inline-keyboard builder, editing/deleting old channel posts, and full draft restoration are not implemented yet. Drafts and templates store references to source messages, not copies of message content.
+This release supports single-message publishing with optional inline URL buttons. Album composition, recurring schedules, auto-delete, editing/deleting old channel posts, and full draft restoration are not implemented yet. Drafts and templates store references to source messages, not copies of message content.
