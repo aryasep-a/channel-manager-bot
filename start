@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+SESSION="${BOT_TMUX_SESSION:-channel-manager}"
+PYTHON="${ROOT}/.venv/bin/python"
+
+cd "$ROOT"
+
+if [[ ! -f .env ]]; then
+  echo "ERROR: .env belum ada. Jalankan: cp .env.example .env lalu isi kredensial."
+  exit 1
+fi
+
+if ! command -v tmux >/dev/null 2>&1; then
+  echo "ERROR: tmux belum terpasang. Install: sudo apt install tmux"
+  exit 1
+fi
+
+if [[ ! -x "$PYTHON" ]]; then
+  command -v python3.10 >/dev/null 2>&1 || { echo "ERROR: Python 3.10 tidak ditemukan."; exit 1; }
+  python3.10 -m venv .venv
+  "$PYTHON" -m pip install --upgrade pip
+  "$PYTHON" -m pip install -r requirements.txt
+fi
+
+"$PYTHON" -m compileall -q bot main.py
+if tmux has-session -t "$SESSION" 2>/dev/null; then
+  echo "Bot sudah berjalan di tmux session: $SESSION"
+  exit 0
+fi
+
+tmux new-session -d -s "$SESSION" "cd '$ROOT' && exec '$PYTHON' '$ROOT/main.py'"
+sleep 2
+if tmux has-session -t "$SESSION" 2>/dev/null; then
+  echo "Channel Manager berjalan."
+  echo "Attach log: tmux attach -t $SESSION"
+else
+  echo "Bot gagal start. Periksa error dengan: tmux ls"
+  exit 1
+fi
