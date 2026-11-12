@@ -47,7 +47,18 @@ def register_common(stores: Stores) -> None:
 
     @app.on_message(filters.private & filters.command("cancel"))
     async def cancel(_, message: Message):
-        app.pending.pop(message.from_user.id, None)
+        uid = message.from_user.id
+        app.pending.pop(uid, None)
+        try:
+            from bot.handlers.channels import _waiting_add
+            _waiting_add.discard(uid)
+        except ImportError:
+            pass
+        try:
+            from bot.handlers.management import _awaiting_settings
+            _awaiting_settings.pop(uid, None)
+        except ImportError:
+            pass
         await message.reply_text("✖️ Proses dibatalkan.", reply_markup=main_menu())
 
     @app.on_callback_query(filters.regex(r"^menu:(home|start|help)$"))
