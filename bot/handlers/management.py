@@ -244,6 +244,20 @@ def register_management(stores: Stores) -> None:
             text = "🕒 Zona waktu\nGunakan <code>/settimezone Asia/Jakarta</code>.\nContoh lain: Asia/Singapore, UTC."
         elif action == "owner_help":
             text = "👑 Ganti owner\nGunakan <code>/setowner USER_ID</code>.\nHanya owner saat ini yang dapat menjalankannya. Perubahan langsung berlaku."
+        elif action in ("update", "restart"):
+            if not await is_owner(query.from_user.id, stores):
+                await query.answer("Khusus owner.", show_alert=True)
+                return
+            script = "update" if action == "update" else "restart"
+            try:
+                _launch_operation(script)
+                text = (
+                    "🔄 Update GitHub dimulai. Bot akan restart setelah proses selesai."
+                    if script == "update"
+                    else "♻️ Restart bot dimulai."
+                )
+            except Exception as exc:
+                text = f"❌ Operasi gagal: <code>{escape(str(exc))}</code>"
         else:
             text = "📚 <b>PERINTAH</b>\n" + _line() + (
                 "\n/channels · /addchannel @username"
