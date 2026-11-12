@@ -168,14 +168,14 @@ def register_management(stores: Stores) -> None:
                 await message.reply_text("⛔ Hanya owner yang dapat menjalankan operasi server.")
                 return
             script = "update" if cmd == "update" else "restart"
+            response = (
+                "🔄 Update GitHub dimulai. Bot akan berhenti sementara lalu hidup kembali."
+                if script == "update"
+                else "♻️ Restart dimulai. Bot akan aktif kembali sebentar lagi."
+            )
+            await message.reply_text(response)
             try:
                 _launch_operation(script)
-                response = (
-                    "🔄 Update GitHub dimulai. Bot akan berhenti sementara lalu hidup kembali."
-                    if script == "update"
-                    else "♻️ Restart dimulai. Bot akan aktif kembali sebentar lagi."
-                )
-                await message.reply_text(response)
             except Exception as exc:
                 await message.reply_text(f"❌ Gagal menjalankan operasi: <code>{escape(str(exc))}</code>")
         elif cmd == "settimezone":
@@ -249,15 +249,11 @@ def register_management(stores: Stores) -> None:
                 await query.answer("Khusus owner.", show_alert=True)
                 return
             script = "update" if action == "update" else "restart"
-            try:
-                _launch_operation(script)
-                text = (
-                    "🔄 Update GitHub dimulai. Bot akan restart setelah proses selesai."
-                    if script == "update"
-                    else "♻️ Restart bot dimulai."
-                )
-            except Exception as exc:
-                text = f"❌ Operasi gagal: <code>{escape(str(exc))}</code>"
+            text = (
+                "🔄 Update GitHub dimulai. Bot akan restart setelah proses selesai."
+                if script == "update"
+                else "♻️ Restart bot dimulai."
+            )
         else:
             text = "📚 <b>PERINTAH</b>\n" + _line() + (
                 "\n/channels · /addchannel @username"
@@ -271,6 +267,13 @@ def register_management(stores: Stores) -> None:
             )
         await query.message.reply_text(text)
         await query.answer()
+        if action in ("update", "restart"):
+            try:
+                _launch_operation(action)
+            except Exception as exc:
+                await query.message.reply_text(
+                    f"❌ Operasi gagal: <code>{escape(str(exc))}</code>"
+                )
 
 
 def _launch_operation(script_name: str) -> None:
