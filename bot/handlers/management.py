@@ -38,7 +38,7 @@ async def _channels_text(stores: Stores) -> str:
             "Channel privat: gunakan ID <code>-100...</code> jika bot sudah ada di dalamnya."
         )
     listing = "\n".join(
-        f"• <b>{item['title']}</b>\n  <code>{item['chat_id']}</code>"
+        f"• <b>{escape(str(item['title']))}</b>\n  <code>{item['chat_id']}</code>"
         for item in rows
     )
     return (
@@ -142,7 +142,7 @@ def register_management(stores: Stores) -> None:
             rows = (await stores.templates.read())["templates"]
             await message.reply_text(
                 "📚 <b>TEMPLATE</b>\n" + _line() + "\n" +
-                ("\n".join(f"• {item['name']}" for item in rows) if rows else "Belum ada template.")
+                ("\n".join(f"• {escape(str(item['name']))}" for item in rows) if rows else "Belum ada template.")
             )
         elif cmd == "settings":
             await message.reply_text(await _settings_text(stores), reply_markup=settings_menu())
