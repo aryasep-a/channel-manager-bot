@@ -64,8 +64,8 @@ async def _settings_text(stores: Stores) -> str:
         f"📢 Channel terhubung: <b>{channels}</b>\n"
         f"🕒 Zona waktu: <code>{cfg.get('timezone', settings.timezone)}</code>\n"
         f"🖥 Runtime: <code>Python 3.10+</code>\n\n"
-        "<b>Pengaturan</b>\\n"
-        "Gunakan tombol di bawah untuk mengelola admin, owner, zona waktu, dan server.\\n"
+        "<b>Pengaturan</b>\n"
+        "Gunakan tombol di bawah untuk mengelola admin, owner, zona waktu, dan server.\n"
         "Format pesan: HTML Telegram."
     )
 
