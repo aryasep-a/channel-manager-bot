@@ -61,6 +61,19 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
         )
         await query.answer()
 
+    @app.on_callback_query(filters.regex(r"^menu:schedule$"))
+    async def schedule_from_menu(_, query: CallbackQuery):
+        if not await role_of(query.from_user.id, stores):
+            await query.answer("Akses ditolak.", show_alert=True)
+            return
+        app.pending[query.from_user.id] = {"mode": "schedule", "run_at": None, "buttons": [], "stage": "schedule_time"}
+        await query.message.reply_text(
+            "🗓 <b>JADWALKAN POSTING</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
+            "Kirim tanggal dan waktu dengan format <code>YYYY-MM-DD HH:MM</code>.\\n"
+            "Zona waktu mengikuti Settings."
+        )
+        await query.answer()
+
     @app.on_message(filters.private & filters.command(["post", "schedule"]))
     async def begin(_, message: Message):
         user_id = message.from_user.id
@@ -99,6 +112,20 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
             return
 
         stage = pending.get("stage", "content")
+
+        if stage == "schedule_time":
+            try:
+                cfg = await stores.settings.read()
+                tz = ZoneInfo(cfg.get("timezone", settings.timezone))
+                when = datetime.strptime((message.text or "").strip(), "%Y-%m-%d %H:%M").replace(tzinfo=tz)
+                if when <= datetime.now(tz):
+                    raise ValueError
+                pending["run_at"] = when.isoformat()
+                pending["stage"] = "content"
+                await message.reply_text("✅ Waktu tersimpan. Sekarang kirim teks, foto, video, GIF, atau dokumen yang akan dijadwalkan.")
+            except (ValueError, KeyError):
+                await message.reply_text("Format salah atau waktu sudah lewat. Contoh: <code>2026-12-31 19:30</code>")
+            return
 
         if stage == "button_label":
             label = (message.text or "").strip()
