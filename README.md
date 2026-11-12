@@ -55,7 +55,7 @@ bash restart
 bash update
 ```
 
-The scripts use the local `.venv/bin/python` and a tmux session named `channel-manager`. Logs are available through:
+The scripts use Python 3.10 in the local `.venv/bin/python` and a tmux session named `channel-manager`. Logs are available through:
 
 ```bash
 tmux attach -t channel-manager
@@ -93,7 +93,6 @@ Detach without stopping the bot using `Ctrl+B`, then `D`.
 | `/addadmin USER_ID`, `/deladmin USER_ID` | Manage admins (owner only) |
 | `/setowner USER_ID` | Transfer owner (current owner only) |
 | `/settimezone Asia/Jakarta` | Set timezone |
-| `/setparsemode html` | Save parse-mode preference |
 | `/settings` | Show configuration |
 | `/cancel` | Cancel active composition |
 
