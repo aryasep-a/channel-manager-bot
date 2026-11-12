@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+SESSION="${BOT_TMUX_SESSION:-channel-manager}"
+cd "$ROOT"
+
+if [[ ! -d .git ]]; then
+  echo "ERROR: folder ini bukan Git repository."
+  exit 1
+fi
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "ERROR: ada perubahan lokal. Commit/stash dulu agar update aman."
+  git status --short
+  exit 1
+fi
+if [[ ! -f .env ]]; then
+  echo "ERROR: .env tidak ditemukan."
+  exit 1
+fi
+if [[ ! -x .venv/bin/python ]]; then
+  echo "ERROR: .venv belum ada. Jalankan bash start terlebih dahulu."
+  exit 1
+fi
+
+BRANCH="$(git branch --show-current)"
+PREVIOUS="$(git rev-parse HEAD)"
+STAMP="$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="$ROOT/backups"
+mkdir -p "$BACKUP_DIR"
+if [[ -d data ]]; then
+  tar -czf "$BACKUP_DIR/data-$STAMP.tar.gz" data
+fi
+
+RUNNING=0
+if tmux has-session -t "$SESSION" 2>/dev/null; then RUNNING=1; fi
+
+rollback() {
+  echo "Update gagal. Mengembalikan source ke $PREVIOUS ..."
+  git reset --hard "$PREVIOUS"
+  .venv/bin/python -m pip install -r requirements.txt || true
+  if [[ "$RUNNING" -eq 1 ]]; then bash "$ROOT/start" || true; fi
+}
+trap 'rollback' ERR
+
+if [[ "$RUNNING" -eq 1 ]]; then bash "$ROOT/stop"; fi
+git fetch origin "$BRANCH"
+git pull --ff-only origin "$BRANCH"
+.venv/bin/python -m pip install -r requirements.txt
+.venv/bin/python -m compileall -q bot main.py
+trap - ERR
+
+echo "Update berhasil: $(git rev-parse --short HEAD)"
+echo "Backup data: $BACKUP_DIR/data-$STAMP.tar.gz"
+if [[ "$RUNNING" -eq 1 ]]; then bash "$ROOT/start"; else echo "Bot sebelumnya berhenti, tidak dijalankan otomatis."; fi
