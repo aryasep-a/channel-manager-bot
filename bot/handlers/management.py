@@ -1,5 +1,7 @@
 from datetime import datetime
 from html import escape
+from pathlib import Path
+import subprocess
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pyrogram import filters
@@ -70,7 +72,7 @@ def register_management(stores: Stores) -> None:
     @app.on_message(filters.private & filters.command([
         "stats", "history", "schedules", "cancel_schedule", "drafts",
         "templates", "template_save", "settings", "setowner",
-        "settimezone",
+        "settimezone", "update", "restart",
     ]))
     async def manage(_, message: Message):
         uid = message.from_user.id
@@ -161,6 +163,21 @@ def register_management(stores: Stores) -> None:
                 f"👑 Owner dipindahkan ke <code>{target}</code>.\n"
                 "Akun owner lama tidak lagi memiliki akses owner."
             )
+        elif cmd in ("update", "restart"):
+            if not await is_owner(uid, stores):
+                await message.reply_text("⛔ Hanya owner yang dapat menjalankan operasi server.")
+                return
+            script = "update" if cmd == "update" else "restart"
+            try:
+                _launch_operation(script)
+                response = (
+                    "🔄 Update GitHub dimulai. Bot akan berhenti sementara lalu hidup kembali."
+                    if script == "update"
+                    else "♻️ Restart dimulai. Bot akan aktif kembali sebentar lagi."
+                )
+                await message.reply_text(response)
+            except Exception as exc:
+                await message.reply_text(f"❌ Gagal menjalankan operasi: <code>{escape(str(exc))}</code>")
         elif cmd == "settimezone":
             if not await is_owner(uid, stores):
                 await message.reply_text("⛔ Hanya owner yang dapat mengubah konfigurasi global.")
@@ -240,3 +257,27 @@ def register_management(stores: Stores) -> None:
             )
         await query.message.reply_text(text)
         await query.answer()
+
+
+def _launch_operation(script_name: str) -> None:
+    if script_name not in ("update", "restart"):
+        raise ValueError("Unsupported operation")
+    project_root = Path(__file__).resolve().parents[2]
+    script_path = project_root / script_name
+    if not script_path.is_file():
+        raise FileNotFoundError(f"Script tidak ditemukan: {script_path}")
+    log_dir = project_root / "logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_handle = (log_dir / "operations.log").open("a", encoding="utf-8")
+    try:
+        subprocess.Popen(
+            ["bash", str(script_path)],
+            cwd=str(project_root),
+            stdin=subprocess.DEVNULL,
+            stdout=log_handle,
+            stderr=subprocess.STDOUT,
+            start_new_session=True,
+            close_fds=True,
+        )
+    finally:
+        log_handle.close()
