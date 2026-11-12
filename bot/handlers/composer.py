@@ -101,10 +101,11 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
             "Kirim teks, foto, video, GIF, atau dokumen yang ingin dipublikasikan."
         )
 
-    @app.on_message(
-        filters.private
-        & ~filters.command(EXCLUDED_COMMANDS)
+    composer_input_filter = filters.create(
+        lambda _, __, message: bool(message.from_user and message.from_user.id in app.pending)
     )
+
+    @app.on_message(filters.private & composer_input_filter & ~filters.command(EXCLUDED_COMMANDS))
     async def capture(_, message: Message):
         user_id = message.from_user.id
         pending = app.pending.get(user_id)
