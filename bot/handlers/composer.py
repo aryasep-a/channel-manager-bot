@@ -28,7 +28,7 @@ def register_composer(stores:Stores,scheduler:ScheduleService)->None:
                 await message.reply_text("Invalid or past date. Example: /schedule 2026-12-31 19:30"); return
         app.pending[uid]={"mode":mode,"run_at":run_at}
         await message.reply_text("Now send or forward ONE message to publish. Use /cancel to abort.")
-    @app.on_message(filters.private & ~filters.command(["start","help","cancel","post","schedule","channels","addchannel","delchannel","setdefault","addadmin","deladmin","admins","stats","history","schedules","cancel_schedule","drafts","settings"]))
+    @app.on_message(filters.private & ~filters.command(["start","help","cancel","post","schedule","channels","addchannel","delchannel","setdefault","addadmin","deladmin","admins","stats","history","schedules","cancel_schedule","drafts","settings"]) & ~filters.regex(r"^(📢 Channels|✍️ Quick Post|🗓 Schedules|📊 Statistics|📝 Drafts|⚙️ Settings)$"))
     async def capture(_,message:Message):
         uid=message.from_user.id; pending=app.pending.get(uid)
         if not pending or not await role_of(uid,stores): return
