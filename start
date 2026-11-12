@@ -23,6 +23,10 @@ if [[ ! -x "$PYTHON" ]]; then
   "$PYTHON" -m pip install -r requirements.txt
 fi
 
+"$PYTHON" -c 'import sys; assert sys.version_info[:2] == (3, 10), "Virtualenv wajib memakai Python 3.10"' || {
+  echo "ERROR: .venv harus dibuat menggunakan Python 3.10. Hapus .venv lalu jalankan bash start lagi."
+  exit 1
+}
 "$PYTHON" -m pip install -r requirements.txt
 "$PYTHON" -m compileall -q bot main.py
 if tmux has-session -t "$SESSION" 2>/dev/null; then
