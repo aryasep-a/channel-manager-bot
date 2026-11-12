@@ -40,4 +40,4 @@ class Stores:
 def init_stores(directory: Path) -> Stores:
     directory.mkdir(parents=True,exist_ok=True)
     return Stores(*[JSONStore(directory/name, default) for name,default in [
-        ('admins.json',{'admins':[]}),('channels.json',{'channels':[]}),('drafts.json',{'drafts':[]}),('schedules.json',{'schedules':[]}),('templates.json',{'templates':[]}),('history.json',{'posts':[]}),('settings.json',{'default_channel':None,'parse_mode':'html'}),('activity.json',{'events':[]})]])
+        ('admins.json',{'admins':[]}),('channels.json',{'channels':[]}),('drafts.json',{'drafts':[]}),('schedules.json',{'schedules':[]}),('templates.json',{'templates':[]}),('history.json',{'posts':[]}),('settings.json',{'default_channel':None,'owner_id':None,'timezone':'Asia/Jakarta','parse_mode':'html'}),('activity.json',{'events':[]})]])
