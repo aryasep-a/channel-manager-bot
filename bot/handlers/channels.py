@@ -1,10 +1,12 @@
+from html import escape
+
 from pyrogram import filters
 from pyrogram.types import Message, CallbackQuery
 
 from bot.client import app
 from bot.storage.json_store import Stores
 from bot.services.permissions import role_of, log_activity
-from bot.keyboards.menus import channel_menu
+from bot.keyboards.menus import channel_menu, confirm_channel_remove
 
 
 def register_channels(stores: Stores) -> None:
@@ -18,7 +20,7 @@ def register_channels(stores: Stores) -> None:
         if cmd == "channels":
             rows = data["channels"]
             text = "📢 <b>CHANNELS</b>\n━━━━━━━━━━━━━━━━━━━━\n"
-            text += "\n".join(f"• {item['title']} · <code>{item['chat_id']}</code>" for item in rows) if rows else "Belum ada channel."
+            text += "\n".join(f"• {escape(str(item['title']))} · <code>{item['chat_id']}</code>" for item in rows) if rows else "Belum ada channel."
             await message.reply_text(text, reply_markup=channel_menu(rows))
             return
         if len(message.command) < 2:
@@ -98,6 +100,18 @@ def register_channels(stores: Stores) -> None:
             text += "\n".join(f"• {item['title']} · <code>{item['chat_id']}</code>" for item in rows) if rows else "Belum ada channel yang terhubung."
             await query.message.edit_text(text, reply_markup=channel_menu(rows))
             await query.answer("Diperbarui.")
+        elif action == "confirm_remove" and len(parts) == 3 and parts[2].lstrip("-").isdigit():
+            target = int(parts[2])
+            data = await stores.channels.read()
+            item = next((row for row in data["channels"] if int(row["chat_id"]) == target), None)
+            if not item:
+                await query.answer("Channel tidak ditemukan.", show_alert=True)
+                return
+            await query.message.reply_text(
+                f"Yakin ingin menghapus <b>{escape(str(item['title']))}</b> dari daftar channel?",
+                reply_markup=confirm_channel_remove(target),
+            )
+            await query.answer()
         elif action == "remove" and len(parts) == 3 and parts[2].lstrip("-").isdigit():
             target = int(parts[2])
             data = await stores.channels.read()
