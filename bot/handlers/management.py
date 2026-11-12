@@ -8,7 +8,7 @@ from bot.client import app
 from bot.config import settings
 from bot.storage.json_store import Stores
 from bot.services.permissions import role_of, is_owner, owner_id, log_activity
-from bot.keyboards.menus import settings_menu, main_menu
+from bot.keyboards.menus import settings_menu, main_menu, channel_menu
 from bot import runtime
 
 
@@ -62,7 +62,7 @@ async def _settings_text(stores: Stores) -> str:
         "<b>Perintah konfigurasi</b>\n"
         "<code>/setowner USER_ID</code> · pindah owner\n"
         "<code>/settimezone Asia/Jakarta</code> · zona waktu\n"
-        "<code>/setparsemode html</code> · format pesan"
+        "Format pesan menggunakan HTML Telegram."
     )
 
 
@@ -70,7 +70,7 @@ def register_management(stores: Stores) -> None:
     @app.on_message(filters.private & filters.command([
         "stats", "history", "schedules", "cancel_schedule", "drafts",
         "templates", "template_save", "settings", "setowner",
-        "settimezone", "setparsemode",
+        "settimezone",
     ]))
     async def manage(_, message: Message):
         uid = message.from_user.id
@@ -175,23 +175,13 @@ def register_management(stores: Stores) -> None:
                 return
             await stores.settings.update(lambda data: data.update({"timezone": message.command[1]}))
             await message.reply_text("✅ Zona waktu disimpan. Berlaku untuk jadwal baru setelah bot dimulai ulang.")
-        elif cmd == "setparsemode":
-            if not await is_owner(uid, stores):
-                await message.reply_text("⛔ Hanya owner yang dapat mengubah konfigurasi global.")
-                return
-            if len(message.command) < 2 or message.command[1].lower() not in ("html", "markdown"):
-                await message.reply_text("Pilihan: <code>/setparsemode html</code> atau <code>/setparsemode markdown</code>.")
-                return
-            await stores.settings.update(lambda data: data.update({"parse_mode": message.command[1].lower()}))
-            await message.reply_text("✅ Preferensi parse mode disimpan. Editor format khusus belum diaktifkan.")
-
     @app.on_message(filters.private & filters.regex(r"^(📢 Channels|✍️ Quick Post|🗓 Schedules|📊 Statistics|📝 Drafts|⚙️ Settings)$"))
     async def menu(_, message: Message):
         if not await role_of(message.from_user.id, stores):
             return
         label = message.text
         if label == "📢 Channels":
-            await message.reply_text(await _channels_text(stores), reply_markup=__import__("bot.keyboards.menus", fromlist=["channel_menu"]).channel_menu((await stores.channels.read())["channels"]))
+            await message.reply_text(await _channels_text(stores), reply_markup=channel_menu((await stores.channels.read())["channels"]))
         elif label == "⚙️ Settings":
             await message.reply_text(await _settings_text(stores), reply_markup=settings_menu())
         elif label == "✍️ Quick Post":
