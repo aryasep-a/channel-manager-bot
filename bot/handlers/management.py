@@ -232,7 +232,7 @@ def register_management(stores: Stores) -> None:
             lines = [f"• <code>{item['id']}</code>" for item in reversed(rows)]
             await message.reply_text("📝 <b>DRAFT</b>\n" + _line() + "\n" + ("\n".join(lines) if lines else "Belum ada draft."))
 
-    @app.on_callback_query(filters.regex(r"^menu:(schedules|stats|drafts|settings)$"))
+    @app.on_callback_query(filters.regex(r"^menu:(schedules|stats|drafts|settings|history)$"))
     async def dashboard_sections(_, query: CallbackQuery):
         if not await role_of(query.from_user.id, stores):
             await query.answer("Akses ditolak.", show_alert=True)
@@ -253,6 +253,14 @@ def register_management(stores: Stores) -> None:
                 + f"\n📢 Channel terhubung: <b>{len(channels['channels'])}</b>"
             )
             markup = back_menu()
+        elif section == "history":
+            rows = (await stores.history.read())["posts"][-20:]
+            listing = "\\n".join(
+                f"• <code>{item['channel_id']}</code> · pesan <code>{item['message_id']}</code> · {escape(str(item.get('sent_at', '-'))[:16])}"
+                for item in reversed(rows)
+            )
+            text = "🧾 <b>RIWAYAT POSTING</b>\\n" + _line() + "\\n" + (listing or "Belum ada posting berhasil.")
+            markup = back_menu()
         elif section == "drafts":
             rows = (await stores.drafts.read())["drafts"][-15:]
             listing = "\n".join(
@@ -269,12 +277,40 @@ def register_management(stores: Stores) -> None:
             )
             text = "🗓 <b>JADWAL POSTING</b>\n" + _line() + "\n" + (listing or "Belum ada jadwal.")
             from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-            markup = InlineKeyboardMarkup([
-                [InlineKeyboardButton("➕ Buat jadwal", callback_data="menu:schedule")],
-                [InlineKeyboardButton("⬅️ Menu utama", callback_data="menu:home")],
-            ])
+            buttons = [[InlineKeyboardButton("➕ Buat jadwal", callback_data="menu:schedule")]]
+            buttons.extend(
+                [InlineKeyboardButton(f"✖️ Batalkan {item['id']}", callback_data=f"schedule:cancel:{item['id']}")]
+                for item in reversed(rows) if item.get("status") == "pending"
+            )
+            buttons.append([InlineKeyboardButton("⬅️ Menu utama", callback_data="menu:home")])
+            markup = InlineKeyboardMarkup(buttons)
         await query.message.edit_text(text, reply_markup=markup)
         await query.answer()
+
+    @app.on_callback_query(filters.regex(r"^schedule:cancel:"))
+    async def cancel_schedule_button(_, query: CallbackQuery):
+        if not await role_of(query.from_user.id, stores):
+            await query.answer("Akses ditolak.", show_alert=True)
+            return
+        schedule_id = query.data.split(":", 2)[2]
+        ok = await runtime.schedule_service.cancel(schedule_id)
+        await query.answer("Jadwal dibatalkan." if ok else "Jadwal pending tidak ditemukan.", show_alert=True)
+        rows = (await stores.schedules.read())["schedules"][-20:]
+        listing = "\\n".join(
+            f"• <code>{item['id']}</code> · {escape(str(item['run_at']))} · <b>{escape(str(item['status']))}</b>"
+            for item in reversed(rows)
+        )
+        from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+        buttons = [[InlineKeyboardButton("➕ Buat jadwal", callback_data="menu:schedule")]]
+        buttons.extend(
+            [InlineKeyboardButton(f"✖️ Batalkan {item['id']}", callback_data=f"schedule:cancel:{item['id']}")]
+            for item in reversed(rows) if item.get("status") == "pending"
+        )
+        buttons.append([InlineKeyboardButton("⬅️ Menu utama", callback_data="menu:home")])
+        await query.message.edit_text(
+            "🗓 <b>JADWAL POSTING</b>\\n" + _line() + "\\n" + (listing or "Belum ada jadwal."),
+            reply_markup=InlineKeyboardMarkup(buttons),
+        )
 
     @app.on_callback_query(filters.regex(r"^settings:"))
     async def settings_actions(_, query: CallbackQuery):
