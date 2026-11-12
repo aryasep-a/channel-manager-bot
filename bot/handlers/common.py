@@ -50,7 +50,7 @@ def register_common(stores: Stores) -> None:
         app.pending.pop(message.from_user.id, None)
         await message.reply_text("✖️ Proses dibatalkan.", reply_markup=main_menu())
 
-    @app.on_callback_query(filters.regex(r"^menu:"))
+    @app.on_callback_query(filters.regex(r"^menu:(home|start|help)$"))
     async def dashboard(_, query: CallbackQuery):
         if not await role_of(query.from_user.id, stores):
             await query.answer("Akses belum diberikan.", show_alert=True)
