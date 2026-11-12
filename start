@@ -23,6 +23,7 @@ if [[ ! -x "$PYTHON" ]]; then
   "$PYTHON" -m pip install -r requirements.txt
 fi
 
+"$PYTHON" -m pip install -r requirements.txt
 "$PYTHON" -m compileall -q bot main.py
 if tmux has-session -t "$SESSION" 2>/dev/null; then
   echo "Bot sudah berjalan di tmux session: $SESSION"
