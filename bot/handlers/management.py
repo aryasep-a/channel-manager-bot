@@ -247,27 +247,27 @@ def register_management(stores: Stores) -> None:
             today = datetime.now().astimezone().date().isoformat()
             today_count = sum(item["sent_at"].startswith(today) for item in history["posts"])
             text = (
-                "📊 <b>STATISTIK</b>\\n" + _line()
-                + f"\\n📝 Total posting: <b>{len(history['posts'])}</b>"
-                + f"\\n📅 Hari ini: <b>{today_count}</b>"
-                + f"\\n📢 Channel terhubung: <b>{len(channels['channels'])}</b>"
+                "📊 <b>STATISTIK</b>\n" + _line()
+                + f"\n📝 Total posting: <b>{len(history['posts'])}</b>"
+                + f"\n📅 Hari ini: <b>{today_count}</b>"
+                + f"\n📢 Channel terhubung: <b>{len(channels['channels'])}</b>"
             )
             markup = back_menu()
         elif section == "drafts":
             rows = (await stores.drafts.read())["drafts"][-15:]
-            listing = "\\n".join(
+            listing = "\n".join(
                 f"• <code>{item['id']}</code> · {escape(str(item.get('created_at', '-')))}"
                 for item in reversed(rows)
             )
-            text = "📝 <b>DRAFT TERSIMPAN</b>\\n" + _line() + "\\n" + (listing or "Belum ada draft.")
+            text = "📝 <b>DRAFT TERSIMPAN</b>\n" + _line() + "\n" + (listing or "Belum ada draft.")
             markup = back_menu()
         else:
             rows = (await stores.schedules.read())["schedules"][-20:]
-            listing = "\\n".join(
+            listing = "\n".join(
                 f"• <code>{item['id']}</code> · {escape(str(item['run_at']))} · <b>{escape(str(item['status']))}</b>"
                 for item in reversed(rows)
             )
-            text = "🗓 <b>JADWAL POSTING</b>\\n" + _line() + "\\n" + (listing or "Belum ada jadwal.")
+            text = "🗓 <b>JADWAL POSTING</b>\n" + _line() + "\n" + (listing or "Belum ada jadwal.")
             from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
             markup = InlineKeyboardMarkup([
                 [InlineKeyboardButton("➕ Buat jadwal", callback_data="menu:schedule")],
@@ -285,7 +285,7 @@ def register_management(stores: Stores) -> None:
         if action == "admins":
             admins = (await stores.admins.read())["admins"]
             await query.message.edit_text(
-                "👥 <b>KELOLA ADMIN</b>\\n" + _line() + "\\nPilih tindakan:",
+                "👥 <b>KELOLA ADMIN</b>\n" + _line() + "\nPilih tindakan:",
                 reply_markup=admins_menu(admins),
             )
             await query.answer()
