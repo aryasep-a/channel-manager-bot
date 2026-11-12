@@ -20,7 +20,6 @@ if [[ ! -x "$PYTHON" ]]; then
   command -v python3.10 >/dev/null 2>&1 || { echo "ERROR: Python 3.10 tidak ditemukan."; exit 1; }
   python3.10 -m venv .venv
   "$PYTHON" -m pip install --upgrade pip
-  "$PYTHON" -m pip install -r requirements.txt
 fi
 
 "$PYTHON" -c 'import sys; assert sys.version_info[:2] == (3, 10), "Virtualenv wajib memakai Python 3.10"' || {
