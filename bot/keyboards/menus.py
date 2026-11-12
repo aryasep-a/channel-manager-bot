@@ -4,7 +4,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 def main_menu():
     return InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("📢 Channels", callback_data="menu:channels"),
+            InlineKeyboardButton("📢 Channel", callback_data="menu:channels"),
             InlineKeyboardButton("✍️ Buat posting", callback_data="menu:post"),
         ],
         [
@@ -13,9 +13,12 @@ def main_menu():
         ],
         [
             InlineKeyboardButton("📝 Draft", callback_data="menu:drafts"),
-            InlineKeyboardButton("⚙️ Settings", callback_data="menu:settings"),
+            InlineKeyboardButton("🧾 Riwayat", callback_data="menu:history"),
         ],
-        [InlineKeyboardButton("📚 Bantuan", callback_data="menu:help")],
+        [
+            InlineKeyboardButton("⚙️ Pengaturan", callback_data="menu:settings"),
+            InlineKeyboardButton("📚 Bantuan", callback_data="menu:help"),
+        ],
     ])
 
 
