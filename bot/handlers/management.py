@@ -62,7 +62,7 @@ async def _settings_text(stores: Stores) -> str:
         "<b>Perintah konfigurasi</b>\n"
         "<code>/setowner USER_ID</code> · pindah owner\n"
         "<code>/settimezone Asia/Jakarta</code> · zona waktu\n"
-        "Format pesan menggunakan HTML Telegram."
+        "Format pesan: HTML Telegram."
     )
 
 
@@ -174,7 +174,7 @@ def register_management(stores: Stores) -> None:
                 await message.reply_text("Zona waktu tidak dikenal. Contoh: <code>Asia/Jakarta</code>.")
                 return
             await stores.settings.update(lambda data: data.update({"timezone": message.command[1]}))
-            await message.reply_text("✅ Zona waktu disimpan. Berlaku untuk jadwal baru setelah bot dimulai ulang.")
+            await message.reply_text("✅ Zona waktu disimpan dan langsung digunakan untuk jadwal baru.")
     @app.on_message(filters.private & filters.regex(r"^(📢 Channels|✍️ Quick Post|🗓 Schedules|📊 Statistics|📝 Drafts|⚙️ Settings)$"))
     async def menu(_, message: Message):
         if not await role_of(message.from_user.id, stores):
