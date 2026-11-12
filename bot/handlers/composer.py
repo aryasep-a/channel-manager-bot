@@ -240,7 +240,7 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
                 "created_at": datetime.now().astimezone().isoformat(),
             }
             await stores.drafts.update(lambda data: data["drafts"].append(item))
-            await query.message.edit_text("💾 <b>DRAFT TERSIMPAN</b>\nID: <code>" + item["id"] + "</code>")
+            await query.message.edit_text("💾 <b>DRAFT TERSIMPAN</b>\nID: <code>" + item["id"] + "</code>", reply_markup=back_menu())
             app.pending.pop(uid, None)
             await query.answer()
             return
@@ -266,7 +266,8 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
                     await scheduler.create(item)
                     await query.message.edit_text(
                         "🗓 <b>JADWAL TERSIMPAN</b>\n"
-                        f"ID: <code>{item['id']}</code>\nWaktu: <code>{item['run_at']}</code>"
+                        f"ID: <code>{item['id']}</code>\nWaktu: <code>{item['run_at']}</code>",
+                        reply_markup=back_menu(),
                     )
                 except Exception as exc:
                     await query.message.edit_text(f"❌ Jadwal gagal: <code>{escape(str(exc)[:200])}</code>")
