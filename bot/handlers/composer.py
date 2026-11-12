@@ -20,7 +20,7 @@ EXCLUDED_COMMANDS = [
     "addchannel", "delchannel", "setdefault", "addadmin", "deladmin",
     "admins", "stats", "history", "schedules", "cancel_schedule",
     "drafts", "settings", "setowner", "settimezone", "templates",
-    "template_save",
+    "template_save", "update", "restart",
 ]
 
 
