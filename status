@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+SESSION="${BOT_TMUX_SESSION:-channel-manager}"
+cd "$ROOT"
+echo "Project : $ROOT"
+echo "Python  : $("$ROOT/.venv/bin/python" --version 2>&1 || echo 'venv belum tersedia')"
+if tmux has-session -t "$SESSION" 2>/dev/null; then
+  echo "Status  : RUNNING ($SESSION)"
+  echo "Log     : tmux attach -t $SESSION"
+else
+  echo "Status  : STOPPED"
+fi
