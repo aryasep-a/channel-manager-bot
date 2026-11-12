@@ -61,7 +61,8 @@ def register_channels(stores: Stores) -> None:
             "➕ <b>TAMBAH CHANNEL</b>\n━━━━━━━━━━━━━━━━━━━━\n"
             "Kirim @username channel atau ID channel privat.\n"
             "Pastikan bot sudah menjadi admin dengan izin Post Messages.\n\n"
-            "Ketik /cancel untuk membatalkan."
+            "Gunakan tombol untuk membatalkan.",
+            reply_markup=cancel_keyboard(),
         )
         await query.answer()
 
