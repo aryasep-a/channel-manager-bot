@@ -29,7 +29,7 @@ EXCLUDED_COMMANDS = [
 
 def _destination_prompt(channels: list[dict]) -> tuple[str, object]:
     return (
-        "📍 <b>PILIH CHANNEL TUJUAN</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
+        "📍 <b>PILIH CHANNEL TUJUAN</b>\n━━━━━━━━━━━━━━━━━━━━\n"
         "Pilih satu channel atau kirim ke semua channel:",
         channel_picker(channels),
     )
@@ -55,8 +55,8 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
             "mode": "post", "run_at": None, "buttons": [], "stage": "content"
         }
         await query.message.reply_text(
-            "✍️ <b>POSTING BARU</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
-            "Kirim teks, foto, video, GIF, atau dokumen yang ingin diposting.\\n"
+            "✍️ <b>POSTING BARU</b>\n━━━━━━━━━━━━━━━━━━━━\n"
+            "Kirim teks, foto, video, GIF, atau dokumen yang ingin diposting.\n"
             "Setelah itu lu bisa menambahkan tombol URL atau langsung lanjut tanpa tombol.",
         )
         await query.answer()
@@ -68,8 +68,8 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
             return
         app.pending[query.from_user.id] = {"mode": "schedule", "run_at": None, "buttons": [], "stage": "schedule_time"}
         await query.message.reply_text(
-            "🗓 <b>JADWALKAN POSTING</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
-            "Kirim tanggal dan waktu dengan format <code>YYYY-MM-DD HH:MM</code>.\\n"
+            "🗓 <b>JADWALKAN POSTING</b>\n━━━━━━━━━━━━━━━━━━━━\n"
+            "Kirim tanggal dan waktu dengan format <code>YYYY-MM-DD HH:MM</code>.\n"
             "Zona waktu mengikuti Settings."
         )
         await query.answer()
@@ -97,7 +97,7 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
                 return
         app.pending[user_id] = {"mode": mode, "run_at": run_at, "buttons": [], "stage": "content"}
         await message.reply_text(
-            "✍️ <b>KIRIM KONTEN</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
+            "✍️ <b>KIRIM KONTEN</b>\n━━━━━━━━━━━━━━━━━━━━\n"
             "Kirim teks, foto, video, GIF, atau dokumen yang ingin dipublikasikan."
         )
 
@@ -150,10 +150,10 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
             }])
             pending["stage"] = "button_menu"
             app.pending[user_id] = pending
-            names = "\\n".join(f"• {escape(row[0]['text'])}" for row in pending["buttons"])
+            names = "\n".join(f"• {escape(row[0]['text'])}" for row in pending["buttons"])
             await message.reply_text(
-                "🔘 <b>TOMBOL DITAMBAHKAN</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
-                f"{names}\\n\\nTambah tombol lain atau lanjut ke pilihan channel:",
+                "🔘 <b>TOMBOL DITAMBAHKAN</b>\n━━━━━━━━━━━━━━━━━━━━\n"
+                f"{names}\n\nTambah tombol lain atau lanjut ke pilihan channel:",
                 reply_markup=button_builder(),
             )
             return
@@ -177,7 +177,7 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
         pending["stage"] = "content_options"
         app.pending[user_id] = pending
         await message.reply_text(
-            "✅ <b>KONTEN DITERIMA</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
+            "✅ <b>KONTEN DITERIMA</b>\n━━━━━━━━━━━━━━━━━━━━\n"
             "Mau menambahkan tombol URL di bawah postingan?",
             reply_markup=content_options(),
         )
@@ -237,7 +237,7 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
                 "created_at": datetime.now().astimezone().isoformat(),
             }
             await stores.drafts.update(lambda data: data["drafts"].append(item))
-            await query.message.edit_text("💾 <b>DRAFT TERSIMPAN</b>\\nID: <code>" + item["id"] + "</code>")
+            await query.message.edit_text("💾 <b>DRAFT TERSIMPAN</b>\nID: <code>" + item["id"] + "</code>")
             app.pending.pop(uid, None)
             await query.answer()
             return
@@ -262,8 +262,8 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
                 try:
                     await scheduler.create(item)
                     await query.message.edit_text(
-                        "🗓 <b>JADWAL TERSIMPAN</b>\\n"
-                        f"ID: <code>{item['id']}</code>\\nWaktu: <code>{item['run_at']}</code>"
+                        "🗓 <b>JADWAL TERSIMPAN</b>\n"
+                        f"ID: <code>{item['id']}</code>\nWaktu: <code>{item['run_at']}</code>"
                     )
                 except Exception as exc:
                     await query.message.edit_text(f"❌ Jadwal gagal: <code>{escape(str(exc)[:200])}</code>")
@@ -275,9 +275,9 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
                 )
                 ok = sum(1 for item in results if item["ok"])
                 failed = [item for item in results if not item["ok"]]
-                text = f"🚀 <b>POSTING SELESAI</b>\\n━━━━━━━━━━━━━━━━━━━━\\nBerhasil: <b>{ok}/{len(results)}</b> channel."
+                text = f"🚀 <b>POSTING SELESAI</b>\n━━━━━━━━━━━━━━━━━━━━\nBerhasil: <b>{ok}/{len(results)}</b> channel."
                 if failed:
-                    text += "\\n\\n<b>Gagal:</b>\\n" + "\\n".join(
+                    text += "\n\n<b>Gagal:</b>\n" + "\n".join(
                         f"• <code>{item['channel_id']}</code>: {escape(item.get('error', 'Gagal')[:120])}"
                         for item in failed
                     )
@@ -307,13 +307,13 @@ def register_composer(stores: Stores, scheduler: ScheduleService) -> None:
         pending["channel_ids"] = [int(x["chat_id"]) for x in selected]
         pending["stage"] = "confirm"
         app.pending[uid] = pending
-        names = "\\n".join(f"• {escape(str(x['title']))}" for x in selected)
+        names = "\n".join(f"• {escape(str(x['title']))}" for x in selected)
         heading = "🗓 <b>KONFIRMASI JADWAL</b>" if pending["mode"] == "schedule" else "📋 <b>KONFIRMASI POSTING</b>"
-        button_lines = "\\n".join(f"• {escape(row[0]['text'])}" for row in pending.get("buttons", [])) or "Tanpa tombol"
+        button_lines = "\n".join(f"• {escape(row[0]['text'])}" for row in pending.get("buttons", [])) or "Tanpa tombol"
         await query.message.edit_text(
-            f"{heading}\\n━━━━━━━━━━━━━━━━━━━━\\n"
-            f"<b>Tujuan:</b>\\n{names}\\n\\n"
-            f"<b>Tombol URL:</b>\\n{button_lines}\\n\\nPeriksa sebelum melanjutkan.",
+            f"{heading}\n━━━━━━━━━━━━━━━━━━━━\n"
+            f"<b>Tujuan:</b>\n{names}\n\n"
+            f"<b>Tombol URL:</b>\n{button_lines}\n\nPeriksa sebelum melanjutkan.",
             reply_markup=confirm_keyboard(pending["mode"] == "schedule"),
         )
         await query.answer()
