@@ -6,10 +6,76 @@ from pyrogram.types import Message, CallbackQuery
 from bot.client import app
 from bot.storage.json_store import Stores
 from bot.services.permissions import role_of, log_activity
-from bot.keyboards.menus import channel_menu, confirm_channel_remove
+from bot.keyboards.menus import channel_menu, confirm_channel_remove, main_menu
+
+
+_waiting_add: set[int] = set()
+
+
+async def _add_channel_from_input(message: Message, stores: Stores) -> None:
+    uid = message.from_user.id
+    value = (message.text or "").strip()
+    data = await stores.channels.read()
+    try:
+        chat = await app.get_chat(value)
+        me = await app.get_me()
+        member = await app.get_chat_member(chat.id, me.id)
+        status = str(member.status).lower()
+        if not any(token in status for token in ("administrator", "owner", "creator")):
+            await message.reply_text("⛔ Bot belum menjadi admin channel. Jadikan bot admin dan aktifkan izin Post Messages.")
+            return
+        if any(int(item["chat_id"]) == int(chat.id) for item in data["channels"]):
+            await message.reply_text("Channel ini sudah terdaftar.", reply_markup=channel_menu(data["channels"]))
+            return
+        data["channels"].append({"chat_id": int(chat.id), "title": chat.title or str(chat.id), "username": chat.username})
+        await stores.channels.write(data)
+        await log_activity(stores, uid, "add_channel", str(chat.id))
+        await message.reply_text(
+            "✅ <b>CHANNEL DITAMBAHKAN</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
+            f"Nama: <b>{escape(str(chat.title or chat.id))}</b>\\nID: <code>{chat.id}</code>",
+            reply_markup=channel_menu(data["channels"]),
+        )
+    except Exception as exc:
+        await message.reply_text(f"❌ Gagal menambahkan channel.\\n<code>{escape(str(exc)[:250])}</code>")
 
 
 def register_channels(stores: Stores) -> None:
+    @app.on_callback_query(filters.regex(r"^menu:channels$"))
+    async def open_channels(_, query: CallbackQuery):
+        if not await role_of(query.from_user.id, stores):
+            await query.answer("Akses ditolak.", show_alert=True)
+            return
+        rows = (await stores.channels.read())["channels"]
+        text = "📢 <b>CHANNELS</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
+        text += "\\n".join(f"• {escape(str(item['title']))} · <code>{item['chat_id']}</code>" for item in rows) if rows else "Belum ada channel yang terhubung."
+        await query.message.edit_text(text, reply_markup=channel_menu(rows))
+        await query.answer()
+
+    @app.on_callback_query(filters.regex(r"^channel:add$"))
+    async def begin_add(_, query: CallbackQuery):
+        if not await role_of(query.from_user.id, stores):
+            await query.answer("Akses ditolak.", show_alert=True)
+            return
+        _waiting_add.add(query.from_user.id)
+        await query.message.reply_text(
+            "➕ <b>TAMBAH CHANNEL</b>\\n━━━━━━━━━━━━━━━━━━━━\\n"
+            "Kirim @username channel atau ID channel privat.\\n"
+            "Pastikan bot sudah menjadi admin dengan izin Post Messages.\\n\n"
+            "Ketik /cancel untuk membatalkan."
+        )
+        await query.answer()
+
+    @app.on_message(filters.private & filters.text & ~filters.command())
+    async def receive_channel(_, message: Message):
+        uid = message.from_user.id
+        if uid not in _waiting_add:
+            return
+        if not await role_of(uid, stores):
+            _waiting_add.discard(uid)
+            return
+        _waiting_add.discard(uid)
+        await _add_channel_from_input(message, stores)
+
     @app.on_message(filters.private & filters.command(["addchannel", "delchannel", "channels", "setdefault"]))
     async def channel_cmd(_, message: Message):
         uid = message.from_user.id
